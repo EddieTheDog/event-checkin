@@ -1,4 +1,4 @@
-// utils.js - shared functions
+// utils.js - shared functions for kiosk & admin
 
 function generateQRCode(text, containerId) {
     const container = document.getElementById(containerId);
@@ -19,7 +19,7 @@ function clearFrame(containerId) {
     if (container) container.innerHTML = '';
 }
 
-// Use absolute URLs to prevent fetching HTML page by mistake
+// Use absolute URLs to prevent HTML instead of JSON
 const D1_API = {
     BASE_URL: window.location.origin, // same domain
 
