@@ -7,23 +7,24 @@
     <script src="utils.js"></script>
     <script src="index.js" defer></script>
     <style>
-        body { font-family: sans-serif; display: flex; flex-direction: column; align-items: center; padding: 30px; }
-        #frame { margin-top: 20px; text-align: center; }
-        input, button { margin: 10px; padding: 10px; font-size: 1rem; }
-        #status { font-size: 1.2rem; margin-top: 20px; }
-        .squares { display: flex; justify-content: center; margin-top: 20px; }
-        .square { width: 30px; height: 30px; margin: 5px; background-color: #555; cursor: pointer; }
+        body { font-family: sans‑serif; padding: 30px; text-align: center; }
+        #frame { margin: 20px; }
+        input, button { padding: 10px; margin: 8px; font-size: 1rem; }
+        #status { margin-top: 20px; font-size: 1.2rem; }
+        .squares { display:flex; justify-content:center; margin-top:20px; }
+        .square { width:30px; height:30px; margin:5px; background:#555; cursor:pointer; }
     </style>
 </head>
 <body>
-    <h1>Event Check-In Kiosk</h1>
-    <input type="text" id="ticket" placeholder="Scan or enter ticket ID">
-    <input type="text" id="name" placeholder="Enter name">
-    <input type="text" id="seat" placeholder="Enter seat">
-    <button id="nextBtn">Next</button>
+    <h1>Event Check‑In</h1>
+    <input id="ticket" placeholder="Scan/Enter Ticket ID">
+    <input id="name" placeholder="Enter Name">
+    <input id="seat" placeholder="Enter Seat">
+    <button id="nextBtn">Submit</button>
 
     <div id="frame"></div>
     <div id="status"></div>
+
     <div id="squaresContainer" class="squares" style="display:none;">
         <div class="square" data-pos="left"></div>
         <div class="square" data-pos="middle"></div>
