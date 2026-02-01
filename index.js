@@ -1,44 +1,48 @@
 window.addEventListener('DOMContentLoaded', () => {
-    let currentId = null;
+    let currentCheckin = null;
+
     const ticketInput = document.getElementById('ticket');
     const nameInput = document.getElementById('name');
     const seatInput = document.getElementById('seat');
     const nextBtn = document.getElementById('nextBtn');
     const statusDiv = document.getElementById('status');
-    const squaresContainer = document.getElementById('squaresContainer');
 
     nextBtn.addEventListener('click', async () => {
         const ticket = ticketInput.value.trim();
         const name = nameInput.value.trim();
         const seat = seatInput.value.trim();
+
         if (!ticket || !name || !seat) {
-            alert("Fill all fields.");
+            alert("Please fill in all fields");
             return;
         }
 
         clearFrame('frame');
         generateQRCode(ticket, 'frame');
 
-        const res = await D1_API.createCheckin({
-            ticket_id: ticket,
-            name,
-            seat,
-            status: "pending"
-        });
-        currentId = res.id;
-        statusDiv.textContent = "Waiting for approval...";
+        const res = await D1_API.createCheckin({ ticket_id: ticket, name, seat, status: "pending" });
+        currentCheckin = res;
+
+        statusDiv.textContent = "Waiting for admin approval...";
     });
 
     async function pollStatus() {
-        if (!currentId) return;
-        const data = await D1_API.findByTicket(currentId.ticket_id || "");
-        if (data && data.status === "approved") {
-            statusDiv.textContent = "Please wait one minute...";
-            squaresContainer.style.display = "none";
-        }
-        if (data && data.status === "declined") {
-            statusDiv.textContent = "Please wait ■ ■ ■";
-            squaresContainer.style.display = "flex";
+        if (!currentCheckin) return;
+        try {
+            const latest = await D1_API.fetchLatestPending();
+            if (!latest || !latest.id) return;
+
+            if (latest.id === currentCheckin.id) {
+                if (latest.status === "approved") {
+                    statusDiv.textContent = "Please wait one minute...";
+                    currentCheckin = null;
+                } else if (latest.status === "declined") {
+                    statusDiv.textContent = "Check-in declined!";
+                    currentCheckin = null;
+                }
+            }
+        } catch (e) {
+            console.error(e);
         }
     }
 
