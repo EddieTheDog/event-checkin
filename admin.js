@@ -1,75 +1,56 @@
-// admin.js
-let latestID = null;
-let currentCheckin = null;
+window.addEventListener('DOMContentLoaded', () => {
+    const scanInput = document.getElementById('scanTicket');
+    const fetchBtn = document.getElementById('fetchBtn');
+    const frameDiv = document.getElementById('frame');
+    const infoDiv = document.getElementById('info');
+    const approveBtn = document.getElementById('approveBtn');
+    const declineBtn = document.getElementById('declineBtn');
+    const statusDiv = document.getElementById('status');
 
-const frameDiv = document.getElementById('frame');
-const adminName = document.getElementById('adminName');
-const adminSeat = document.getElementById('adminSeat');
-const approveBtn = document.getElementById('approveBtn');
-const declineBtn = document.getElementById('declineBtn');
-const declineReasonsDiv = document.getElementById('declineReasons');
-const finishBtn = document.getElementById('finishBtn');
-const statusDiv = document.getElementById('status');
+    let currentData = null;
 
-// Poll latest check-in ID every 3s
-async function pollLatest() {
-    try {
-        const res = await D1_API.fetchLatestID();
-        if (res.latest_checkin_id && res.latest_checkin_id !== latestID) {
-            latestID = res.latest_checkin_id;
-            fetchFullData(latestID);
+    fetchBtn.addEventListener('click', async () => {
+        const ticket = scanInput.value.trim();
+        if (!ticket) return;
+        clearFrame('frame');
+        infoDiv.innerHTML = "";
+        statusDiv.textContent = "";
+
+        const data = await D1_API.findByTicket(ticket);
+        if (!data || !data.id) {
+            statusDiv.textContent = "Not found!";
+            return;
         }
-    } catch(e) {
-        console.error(e);
+
+        currentData = data;
+        generateQRCode(data.ticket_id, 'frame');
+
+        infoDiv.innerHTML = `
+            <p><b>Name:</b> ${data.name}</p>
+            <p><b>Seat:</b> ${data.seat}</p>
+        `;
+
+        approveBtn.style.display = "inline";
+        declineBtn.style.display = "inline";
+    });
+
+    approveBtn.addEventListener('click', async () => {
+        if (!currentData) return;
+        await D1_API.updateStatus(currentData.id, "approved");
+        statusDiv.textContent = "Approved!";
+        resetAfter();
+    });
+
+    declineBtn.addEventListener('click', async () => {
+        if (!currentData) return;
+        await D1_API.deleteCheckin(currentData.id);
+        statusDiv.textContent = "Declined & deleted!";
+        resetAfter();
+    });
+
+    function resetAfter() {
+        currentData = null;
+        approveBtn.style.display = "none";
+        declineBtn.style.display = "none";
     }
-}
-
-// Fetch full data
-async function fetchFullData(id) {
-    const data = await D1_API.fetchFullData(id);
-    if (!data) return;
-    currentCheckin = data;
-
-    clearFrame('frame');
-    generateQRCode(data.ticket_id, 'frame');
-    adminName.value = data.name;
-    adminSeat.value = data.seat;
-    statusDiv.textContent = "New check-in received.";
-    declineReasonsDiv.style.display = "none";
-    finishBtn.style.display = "none";
-}
-
-// Approve
-approveBtn.addEventListener('click', async () => {
-    if (!currentCheckin) return;
-    await D1_API.updateStatus(currentCheckin.id, "approved");
-    statusDiv.textContent = "Approved. Waiting for name tag retrieval.";
 });
-
-// Decline
-declineBtn.addEventListener('click', () => {
-    declineReasonsDiv.style.display = "block";
-});
-
-// Select decline reason
-declineReasonsDiv.addEventListener('click', async (e) => {
-    if (!e.target.classList.contains('decline-reason')) return;
-    const reason = e.target.dataset.reason;
-    await D1_API.updateStatus(currentCheckin.id, "declined", reason);
-    statusDiv.textContent = "Declined: " + reason;
-    finishBtn.style.display = "inline-block";
-});
-
-// Finish workflow
-finishBtn.addEventListener('click', () => {
-    clearFrame('frame');
-    adminName.value = "";
-    adminSeat.value = "";
-    statusDiv.textContent = "Ready for next guest.";
-    declineReasonsDiv.style.display = "none";
-    finishBtn.style.display = "none";
-    currentCheckin = null;
-    latestID = null;
-});
-
-setInterval(pollLatest, 3000);
