@@ -1,3 +1,4 @@
+// index.js - kiosk (guest check-in)
 window.addEventListener('DOMContentLoaded', () => {
     let currentCheckin = null;
 
