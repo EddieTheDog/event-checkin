@@ -20,7 +20,6 @@ function clearFrame(containerId) {
 }
 
 const D1_API = {
-    // Domain-agnostic: automatically uses the same origin
     BASE_URL: window.location.origin,
 
     async createCheckin(data) {
