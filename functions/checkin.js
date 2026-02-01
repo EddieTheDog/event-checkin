@@ -3,7 +3,6 @@ export async function onRequest(context) {
     const url = new URL(request.url);
     const path = url.pathname;
 
-    // Helper to return JSON
     async function jsonRes(data, status=200) {
         return new Response(JSON.stringify(data), {
             status,
@@ -11,7 +10,7 @@ export async function onRequest(context) {
         });
     }
 
-    // POST /checkin - create a new checkin
+    // POST /checkin
     if (path === "/checkin" && request.method === "POST") {
         try {
             const { ticket_id, name, seat, status } = await request.json();
@@ -29,7 +28,7 @@ export async function onRequest(context) {
         }
     }
 
-    // GET /latest - get the latest pending check-in
+    // GET /latest
     if (path === "/latest" && request.method === "GET") {
         try {
             const res = await env.checkin.prepare(`
@@ -46,7 +45,7 @@ export async function onRequest(context) {
         }
     }
 
-    // POST /update/:id - update status (approved/declined)
+    // POST /update/:id
     if (path.startsWith("/update/") && request.method === "POST") {
         try {
             const id = path.split("/")[2];
@@ -59,7 +58,7 @@ export async function onRequest(context) {
         }
     }
 
-    // POST /delete/:id - delete a check-in
+    // POST /delete/:id
     if (path.startsWith("/delete/") && request.method === "POST") {
         try {
             const id = path.split("/")[2];
@@ -71,6 +70,5 @@ export async function onRequest(context) {
         }
     }
 
-    // Default: not found
     return new Response("Not found", { status: 404 });
 }
