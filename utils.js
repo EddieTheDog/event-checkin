@@ -20,7 +20,7 @@ function clearFrame(containerId) {
 }
 
 const D1_API = {
-    BASE_URL: window.location.origin,
+    BASE_URL: window.location.origin, // same domain
 
     async createCheckin(data) {
         const r = await fetch(`${this.BASE_URL}/checkin`, {
