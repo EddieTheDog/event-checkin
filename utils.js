@@ -1,53 +1,39 @@
-// utils.js - shared functions for kiosk & admin
+const BASE_URL = window.location.origin;
 
-function generateQRCode(text, containerId) {
-    const container = document.getElementById(containerId);
-    if (!container) return;
-    container.innerHTML = '';
-    new QRCode(container, {
-        text: text,
-        width: 180,
-        height: 180,
-        colorDark: "#000000",
-        colorLight: "#ffffff",
-        correctLevel: QRCode.CorrectLevel.H
+async function fetchJSON(url, options = {}) {
+    try {
+        const res = await fetch(`${BASE_URL}${url}`, options);
+        return await res.json();
+    } catch (e) {
+        console.error("Fetch error:", e);
+        throw e;
+    }
+}
+
+async function createCheckin(ticket_id, name, seat) {
+    return fetchJSON("/checkin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ticket_id, name, seat }),
     });
 }
 
-function clearFrame(containerId) {
-    const container = document.getElementById(containerId);
-    if (container) container.innerHTML = '';
+async function fetchLatest() {
+    return fetchJSON("/latest");
 }
 
-// Use absolute URLs to prevent HTML instead of JSON
-const D1_API = {
-    BASE_URL: window.location.origin, // same domain
+async function updateCheckin(id, status) {
+    return fetchJSON(`/update/${id}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status }),
+    });
+}
 
-    async createCheckin(data) {
-        const res = await fetch(`${this.BASE_URL}/checkin`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
-        });
-        return res.json();
-    },
+async function deleteCheckin(id) {
+    return fetchJSON(`/delete/${id}`, { method: "POST" });
+}
 
-    async fetchLatestPending() {
-        const res = await fetch(`${this.BASE_URL}/latest`);
-        return res.json();
-    },
-
-    async updateStatus(id, status) {
-        const res = await fetch(`${this.BASE_URL}/update/${id}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ status })
-        });
-        return res.json();
-    },
-
-    async deleteCheckin(id) {
-        const res = await fetch(`${this.BASE_URL}/delete/${id}`, { method: 'POST' });
-        return res.json();
-    }
-};
+async function fetchAll() {
+    return fetchJSON("/all");
+}
