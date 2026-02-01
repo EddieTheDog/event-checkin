@@ -1,22 +1,32 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Event Check-in Kiosk</title>
-<style>
-body { font-family: Arial; text-align: center; margin-top: 50px; }
-input, button { font-size: 18px; margin: 5px; padding: 8px; }
-</style>
+  <meta charset="UTF-8">
+  <title>Event Check-In</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<h1>Scan Your Ticket</h1>
-<input id="ticketInput" placeholder="Scan or enter ticket ID">
-<input id="nameInput" placeholder="Name">
-<input id="seatInput" placeholder="Seat">
-<button id="checkinBtn">Next</button>
-<p id="status"></p>
+  <h1>Event Check-In</h1>
 
-<script src="utils.js"></script>
-<script src="index.js"></script>
+  <!-- Kiosk Section -->
+  <div id="kiosk">
+    <h2>Kiosk Entry</h2>
+    <input type="text" id="ticket_id" placeholder="Ticket ID">
+    <input type="text" id="name" placeholder="Name">
+    <input type="text" id="seat" placeholder="Seat">
+    <button id="submitBtn">Submit Check-In</button>
+    <p id="kioskMessage"></p>
+  </div>
+
+  <!-- Admin Section -->
+  <div id="admin">
+    <h2>Admin Panel</h2>
+    <pre id="adminOutput"></pre>
+    <button id="approveBtn">Approve</button>
+    <button id="declineBtn">Decline</button>
+    <input type="text" id="declineReason" placeholder="Reason if declined">
+  </div>
+
+  <script src="script.js"></script>
 </body>
 </html>
