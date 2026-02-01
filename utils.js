@@ -19,34 +19,35 @@ function clearFrame(containerId) {
     if (container) container.innerHTML = '';
 }
 
+// Use absolute URLs to prevent fetching HTML page by mistake
 const D1_API = {
     BASE_URL: window.location.origin, // same domain
 
     async createCheckin(data) {
-        const r = await fetch(`${this.BASE_URL}/checkin`, {
+        const res = await fetch(`${this.BASE_URL}/checkin`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data)
         });
-        return r.json();
+        return res.json();
     },
 
     async fetchLatestPending() {
-        const r = await fetch(`${this.BASE_URL}/latest`);
-        return r.json();
+        const res = await fetch(`${this.BASE_URL}/latest`);
+        return res.json();
     },
 
     async updateStatus(id, status) {
-        const r = await fetch(`${this.BASE_URL}/update/${id}`, {
+        const res = await fetch(`${this.BASE_URL}/update/${id}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ status })
         });
-        return r.json();
+        return res.json();
     },
 
     async deleteCheckin(id) {
-        const r = await fetch(`${this.BASE_URL}/delete/${id}`, { method: 'POST' });
-        return r.json();
+        const res = await fetch(`${this.BASE_URL}/delete/${id}`, { method: 'POST' });
+        return res.json();
     }
 };
