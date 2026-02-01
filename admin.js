@@ -1,56 +1,55 @@
 window.addEventListener('DOMContentLoaded', () => {
-    const scanInput = document.getElementById('scanTicket');
-    const fetchBtn = document.getElementById('fetchBtn');
+    let currentCheckin = null;
+
     const frameDiv = document.getElementById('frame');
     const infoDiv = document.getElementById('info');
     const approveBtn = document.getElementById('approveBtn');
     const declineBtn = document.getElementById('declineBtn');
     const statusDiv = document.getElementById('status');
 
-    let currentData = null;
+    async function pollLatest() {
+        try {
+            const latest = await D1_API.fetchLatestPending();
+            if (!latest || !latest.id || (currentCheckin && latest.id === currentCheckin.id)) return;
 
-    fetchBtn.addEventListener('click', async () => {
-        const ticket = scanInput.value.trim();
-        if (!ticket) return;
-        clearFrame('frame');
-        infoDiv.innerHTML = "";
-        statusDiv.textContent = "";
+            currentCheckin = latest;
 
-        const data = await D1_API.findByTicket(ticket);
-        if (!data || !data.id) {
-            statusDiv.textContent = "Not found!";
-            return;
+            clearFrame('frame');
+            generateQRCode(latest.ticket_id, 'frame');
+
+            infoDiv.innerHTML = `<p><b>Name:</b> ${latest.name}</p>
+                                 <p><b>Seat:</b> ${latest.seat}</p>
+                                 <p><b>Ticket ID:</b> ${latest.ticket_id}</p>`;
+
+            approveBtn.style.display = "inline";
+            declineBtn.style.display = "inline";
+            statusDiv.textContent = "New check-in received";
+        } catch (e) {
+            console.error(e);
         }
-
-        currentData = data;
-        generateQRCode(data.ticket_id, 'frame');
-
-        infoDiv.innerHTML = `
-            <p><b>Name:</b> ${data.name}</p>
-            <p><b>Seat:</b> ${data.seat}</p>
-        `;
-
-        approveBtn.style.display = "inline";
-        declineBtn.style.display = "inline";
-    });
+    }
 
     approveBtn.addEventListener('click', async () => {
-        if (!currentData) return;
-        await D1_API.updateStatus(currentData.id, "approved");
-        statusDiv.textContent = "Approved!";
-        resetAfter();
+        if (!currentCheckin) return;
+        await D1_API.updateStatus(currentCheckin.id, "approved");
+        statusDiv.textContent = "Check-in approved!";
+        resetCheckin();
     });
 
     declineBtn.addEventListener('click', async () => {
-        if (!currentData) return;
-        await D1_API.deleteCheckin(currentData.id);
-        statusDiv.textContent = "Declined & deleted!";
-        resetAfter();
+        if (!currentCheckin) return;
+        await D1_API.deleteCheckin(currentCheckin.id);
+        statusDiv.textContent = "Check-in declined and deleted!";
+        resetCheckin();
     });
 
-    function resetAfter() {
-        currentData = null;
+    function resetCheckin() {
+        currentCheckin = null;
         approveBtn.style.display = "none";
         declineBtn.style.display = "none";
+        clearFrame('frame');
+        infoDiv.innerHTML = "";
     }
+
+    setInterval(pollLatest, 2000);
 });
