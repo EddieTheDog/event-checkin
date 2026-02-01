@@ -1,3 +1,4 @@
+// admin.js - admin panel
 window.addEventListener('DOMContentLoaded', () => {
     let currentCheckin = null;
 
