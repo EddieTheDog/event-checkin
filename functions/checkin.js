@@ -3,6 +3,7 @@ export async function onRequest(context) {
     const url = new URL(request.url);
     const path = url.pathname;
 
+    // Helper to return JSON
     async function jsonRes(data, status=200) {
         return new Response(JSON.stringify(data), {
             status,
@@ -10,7 +11,7 @@ export async function onRequest(context) {
         });
     }
 
-    // POST /checkin
+    // POST /checkin - create a new checkin
     if (path === "/checkin" && request.method === "POST") {
         try {
             const { ticket_id, name, seat, status } = await request.json();
@@ -28,13 +29,14 @@ export async function onRequest(context) {
         }
     }
 
-    // GET /latest
+    // GET /latest - get the latest pending check-in
     if (path === "/latest" && request.method === "GET") {
         try {
             const res = await env.checkin.prepare(`
                 SELECT * FROM checkins
                 WHERE status='pending'
-                ORDER BY timestamp DESC LIMIT 1
+                ORDER BY timestamp DESC
+                LIMIT 1
             `).all();
 
             return jsonRes(res.results[0] || {});
@@ -44,7 +46,7 @@ export async function onRequest(context) {
         }
     }
 
-    // POST /update/:id
+    // POST /update/:id - update status (approved/declined)
     if (path.startsWith("/update/") && request.method === "POST") {
         try {
             const id = path.split("/")[2];
@@ -57,10 +59,18 @@ export async function onRequest(context) {
         }
     }
 
-    // POST /delete/:id
+    // POST /delete/:id - delete a check-in
     if (path.startsWith("/delete/") && request.method === "POST") {
         try {
             const id = path.split("/")[2];
             await env.checkin.prepare(`DELETE FROM checkins WHERE id=?`).bind(id).run();
             return jsonRes({ deleted: true });
-        } ca
+        } catch (e) {
+            console.error("Delete failed:", e);
+            return jsonRes({ error: "Internal Server Error" }, 500);
+        }
+    }
+
+    // Default: not found
+    return new Response("Not found", { status: 404 });
+}
