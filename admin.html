@@ -7,20 +7,16 @@
     <script src="utils.js"></script>
     <script src="admin.js" defer></script>
     <style>
-        body { font-family: sans‑serif; padding:20px; }
-        #frame { margin: 20px; }
-        input, button { padding:10px; margin:8px; font-size:1rem; }
+        body { font-family: sans-serif; padding:20px; }
+        #frame { margin:20px; }
+        button { padding:10px; margin:8px; font-size:1rem; }
+        #info { margin-top:10px; }
     </style>
 </head>
 <body>
-    <h1>Admin Check‑In</h1>
-
-    <input id="scanTicket" placeholder="Scan/Enter Ticket ID">
-    <button id="fetchBtn">Lookup Attendee</button>
-
+    <h1>Admin Panel</h1>
     <div id="frame"></div>
     <div id="info"></div>
-
     <button id="approveBtn" style="display:none;">Approve</button>
     <button id="declineBtn" style="display:none;">Decline</button>
     <div id="status"></div>
