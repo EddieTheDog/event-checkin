@@ -20,10 +20,14 @@ window.addEventListener('DOMContentLoaded', () => {
         clearFrame('frame');
         generateQRCode(ticket, 'frame');
 
-        const res = await D1_API.createCheckin({ ticket_id: ticket, name, seat, status: "pending" });
-        currentCheckin = res;
-
-        statusDiv.textContent = "Waiting for admin approval...";
+        try {
+            const res = await D1_API.createCheckin({ ticket_id: ticket, name, seat, status: "pending" });
+            currentCheckin = res;
+            statusDiv.textContent = "Waiting for admin approval...";
+        } catch (e) {
+            console.error("Check-in failed:", e);
+            statusDiv.textContent = "Error submitting check-in.";
+        }
     });
 
     async function pollStatus() {
@@ -42,7 +46,7 @@ window.addEventListener('DOMContentLoaded', () => {
                 }
             }
         } catch (e) {
-            console.error(e);
+            console.error("Polling error:", e);
         }
     }
 
