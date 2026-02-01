@@ -1,66 +1,101 @@
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
-    const path = url.pathname;
+    const { pathname } = url;
 
+    // Helper: JSON response
     async function jsonRes(data, status = 200) {
       return new Response(JSON.stringify(data), {
         status,
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json" }
       });
     }
 
     try {
-      // Create new check-in
-      if (path === "/checkin" && request.method === "POST") {
-        const { ticket_id, name, seat, status } = await request.json();
-        if (!ticket_id || !name || !seat) return jsonRes({ error: "missing fields" }, 400);
+      // ------------------------------
+      // POST /checkin - add new check-in
+      // ------------------------------
+      if (pathname === "/checkin" && request.method === "POST") {
+        const { ticket_id, name, seat } = await request.json();
 
-        const i = await env.checkin.prepare(`
-          INSERT INTO checkins (ticket_id, name, seat, status)
-          VALUES (?, ?, ?, ?)
-        `).bind(ticket_id, name, seat, status || "pending").run();
+        if (!ticket_id || !name || !seat) {
+          return jsonRes({ error: "Missing required fields" }, 400);
+        }
 
-        return jsonRes({ id: i.lastInsertRowid });
+        const result = await env.checkin
+          .prepare(
+            `INSERT INTO checkins (ticket_id, name, seat, status)
+             VALUES (?, ?, ?, 'pending')`
+          )
+          .bind(ticket_id, name, seat)
+          .run();
+
+        return jsonRes({ id: result.lastInsertRowid });
       }
 
-      // Get the latest pending check-in
-      if (path === "/latest" && request.method === "GET") {
-        const res = await env.checkin.prepare(`
-          SELECT * FROM checkins
-          WHERE status='pending'
-          ORDER BY timestamp DESC
-          LIMIT 1
-        `).all();
-        return jsonRes(res.results[0] || {});
+      // ------------------------------
+      // GET /latest - get latest pending check-in
+      // ------------------------------
+      if (pathname === "/latest" && request.method === "GET") {
+        const result = await env.checkin
+          .prepare(
+            `SELECT * FROM checkins WHERE status='pending' ORDER BY timestamp ASC LIMIT 1`
+          )
+          .all();
+
+        if (!result.results.length) return jsonRes({});
+        return jsonRes(result.results[0]);
       }
 
-      // Update status of check-in
-      if (path.startsWith("/update/") && request.method === "POST") {
-        const id = path.split("/")[2];
-        const { status } = await request.json();
-        await env.checkin.prepare(`UPDATE checkins SET status=? WHERE id=?`).bind(status, id).run();
+      // ------------------------------
+      // POST /update/:id - approve or decline
+      // ------------------------------
+      if (pathname.startsWith("/update/") && request.method === "POST") {
+        const id = pathname.split("/")[2];
+        const { status, decline_reason } = await request.json();
+
+        if (!["approved", "declined"].includes(status)) {
+          return jsonRes({ error: "Invalid status" }, 400);
+        }
+
+        await env.checkin
+          .prepare(
+            `UPDATE checkins SET status=?, decline_reason=?, processed=1 WHERE id=?`
+          )
+          .bind(status, decline_reason || null, id)
+          .run();
+
         return jsonRes({ success: true });
       }
 
-      // Delete a check-in
-      if (path.startsWith("/delete/") && request.method === "POST") {
-        const id = path.split("/")[2];
-        await env.checkin.prepare(`DELETE FROM checkins WHERE id=?`).bind(id).run();
+      // ------------------------------
+      // POST /delete/:id - delete a check-in
+      // ------------------------------
+      if (pathname.startsWith("/delete/") && request.method === "POST") {
+        const id = pathname.split("/")[2];
+        await env.checkin
+          .prepare(`DELETE FROM checkins WHERE id=?`)
+          .bind(id)
+          .run();
+
         return jsonRes({ deleted: true });
       }
 
-      // Get all check-ins
-      if (path === "/all" && request.method === "GET") {
-        const res = await env.checkin.prepare(`SELECT * FROM checkins ORDER BY timestamp DESC`).all();
-        return jsonRes(res.results || []);
+      // ------------------------------
+      // GET /all - list all check-ins
+      // ------------------------------
+      if (pathname === "/all" && request.method === "GET") {
+        const result = await env.checkin.prepare(`SELECT * FROM checkins`).all();
+        return jsonRes(result.results);
       }
 
+      // ------------------------------
+      // Default: Not Found
+      // ------------------------------
       return new Response("Not found", { status: 404 });
-
     } catch (err) {
-      console.error("Server error:", err);
-      return jsonRes({ error: "Internal Server Error" }, 500);
+      console.error("Error in checkin function:", err);
+      return jsonRes({ error: err.message }, 500);
     }
   }
 };
