@@ -25,22 +25,30 @@ window.addEventListener('DOMContentLoaded', () => {
             declineBtn.style.display = "inline";
             statusDiv.textContent = "New check-in received";
         } catch (e) {
-            console.error(e);
+            console.error("Polling error:", e);
         }
     }
 
     approveBtn.addEventListener('click', async () => {
         if (!currentCheckin) return;
-        await D1_API.updateStatus(currentCheckin.id, "approved");
-        statusDiv.textContent = "Check-in approved!";
-        resetCheckin();
+        try {
+            await D1_API.updateStatus(currentCheckin.id, "approved");
+            statusDiv.textContent = "Check-in approved!";
+            resetCheckin();
+        } catch (e) {
+            console.error("Approval failed:", e);
+        }
     });
 
     declineBtn.addEventListener('click', async () => {
         if (!currentCheckin) return;
-        await D1_API.deleteCheckin(currentCheckin.id);
-        statusDiv.textContent = "Check-in declined and deleted!";
-        resetCheckin();
+        try {
+            await D1_API.deleteCheckin(currentCheckin.id);
+            statusDiv.textContent = "Check-in declined and deleted!";
+            resetCheckin();
+        } catch (e) {
+            console.error("Decline failed:", e);
+        }
     });
 
     function resetCheckin() {
