@@ -1,4 +1,4 @@
-// admin.js - admin panel
+// admin.js - admin panel with server output and copy button
 window.addEventListener('DOMContentLoaded', () => {
     let currentCheckin = null;
 
@@ -7,6 +7,20 @@ window.addEventListener('DOMContentLoaded', () => {
     const approveBtn = document.getElementById('approveBtn');
     const declineBtn = document.getElementById('declineBtn');
     const statusDiv = document.getElementById('status');
+    const consoleDiv = document.getElementById('serverConsole');
+    const copyBtn = document.getElementById('copyConsole');
+
+    function logConsole(msg) {
+        const timestamp = new Date().toLocaleTimeString();
+        consoleDiv.textContent += `[${timestamp}] ${msg}\n`;
+        consoleDiv.scrollTop = consoleDiv.scrollHeight;
+    }
+
+    copyBtn.addEventListener('click', () => {
+        navigator.clipboard.writeText(consoleDiv.textContent)
+            .then(() => logConsole("Copied console to clipboard"))
+            .catch(err => logConsole("Copy failed: " + err));
+    });
 
     async function pollLatest() {
         try {
@@ -25,30 +39,34 @@ window.addEventListener('DOMContentLoaded', () => {
             approveBtn.style.display = "inline";
             declineBtn.style.display = "inline";
             statusDiv.textContent = "New check-in received";
+
+            logConsole("Fetched latest check-in: " + JSON.stringify(latest));
         } catch (e) {
-            console.error("Polling error:", e);
+            logConsole("Polling error: " + e);
         }
     }
 
     approveBtn.addEventListener('click', async () => {
         if (!currentCheckin) return;
         try {
-            await D1_API.updateStatus(currentCheckin.id, "approved");
+            const res = await D1_API.updateStatus(currentCheckin.id, "approved");
             statusDiv.textContent = "Check-in approved!";
+            logConsole("Approved: " + JSON.stringify(res));
             resetCheckin();
         } catch (e) {
-            console.error("Approval failed:", e);
+            logConsole("Approval failed: " + e);
         }
     });
 
     declineBtn.addEventListener('click', async () => {
         if (!currentCheckin) return;
         try {
-            await D1_API.deleteCheckin(currentCheckin.id);
+            const res = await D1_API.deleteCheckin(currentCheckin.id);
             statusDiv.textContent = "Check-in declined and deleted!";
+            logConsole("Declined: " + JSON.stringify(res));
             resetCheckin();
         } catch (e) {
-            console.error("Decline failed:", e);
+            logConsole("Decline failed: " + e);
         }
     });
 
