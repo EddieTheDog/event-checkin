@@ -2,33 +2,27 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Event Check-In Admin</title>
+    <title>Admin Panel</title>
     <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
     <script src="utils.js"></script>
     <script src="admin.js" defer></script>
     <style>
-        body { font-family: sans-serif; padding: 20px; }
-        #frame { margin-top: 20px; }
-        input, button { margin: 5px; padding: 8px; font-size: 1rem; }
-        #status { margin-top: 10px; font-weight: bold; }
-        .decline-reason { margin: 5px; padding: 8px; cursor: pointer; background-color: #eee; display:inline-block; }
+        body { font-family: sans‑serif; padding:20px; }
+        #frame { margin: 20px; }
+        input, button { padding:10px; margin:8px; font-size:1rem; }
     </style>
 </head>
 <body>
-    <h1>Admin Panel</h1>
+    <h1>Admin Check‑In</h1>
+
+    <input id="scanTicket" placeholder="Scan/Enter Ticket ID">
+    <button id="fetchBtn">Lookup Attendee</button>
+
     <div id="frame"></div>
-    <div>
-        Name: <input type="text" id="adminName"><br>
-        Seat: <input type="text" id="adminSeat">
-    </div>
-    <button id="approveBtn">Approve</button>
-    <button id="declineBtn">Decline</button>
-    <div id="declineReasons" style="display:none;">
-        <span class="decline-reason" data-reason="Invalid ticket">Invalid ticket</span>
-        <span class="decline-reason" data-reason="Duplicate">Duplicate</span>
-        <span class="decline-reason" data-reason="Other">Other</span>
-    </div>
-    <button id="finishBtn" style="display:none;">Finish</button>
+    <div id="info"></div>
+
+    <button id="approveBtn" style="display:none;">Approve</button>
+    <button id="declineBtn" style="display:none;">Decline</button>
     <div id="status"></div>
 </body>
 </html>
