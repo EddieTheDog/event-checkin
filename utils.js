@@ -1,9 +1,9 @@
-// utils.js
+// utils.js - shared functions
 
 function generateQRCode(text, containerId) {
     const container = document.getElementById(containerId);
     if (!container) return;
-    container.innerHTML = ''; // clear old
+    container.innerHTML = '';
     new QRCode(container, {
         text: text,
         width: 180,
@@ -20,7 +20,8 @@ function clearFrame(containerId) {
 }
 
 const D1_API = {
-    BASE_URL: "https://event-checkin-6d8.pages.dev",
+    // Domain-agnostic: automatically uses the same origin
+    BASE_URL: window.location.origin,
 
     async createCheckin(data) {
         const r = await fetch(`${this.BASE_URL}/checkin`, {
@@ -31,8 +32,8 @@ const D1_API = {
         return r.json();
     },
 
-    async findByTicket(ticket) {
-        const r = await fetch(`${this.BASE_URL}/find/${ticket}`);
+    async fetchLatestPending() {
+        const r = await fetch(`${this.BASE_URL}/latest`);
         return r.json();
     },
 
@@ -46,9 +47,7 @@ const D1_API = {
     },
 
     async deleteCheckin(id) {
-        const r = await fetch(`${this.BASE_URL}/delete/${id}`, {
-            method: 'POST'
-        });
+        const r = await fetch(`${this.BASE_URL}/delete/${id}`, { method: 'POST' });
         return r.json();
     }
 };
