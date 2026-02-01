@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Event Check-In Kiosk</title>
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    <script src="utils.js"></script>
+    <script src="index.js" defer></script>
+    <style>
+        body { font-family: sans-serif; display: flex; flex-direction: column; align-items: center; padding: 30px; }
+        #frame { margin-top: 20px; text-align: center; }
+        input, button { margin: 10px; padding: 10px; font-size: 1rem; }
+        #status { font-size: 1.2rem; margin-top: 20px; }
+        .squares { display: flex; justify-content: center; margin-top: 20px; }
+        .square { width: 30px; height: 30px; margin: 5px; background-color: #555; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>Event Check-In Kiosk</h1>
+    <input type="text" id="ticket" placeholder="Scan or enter ticket ID">
+    <input type="text" id="name" placeholder="Enter name">
+    <input type="text" id="seat" placeholder="Enter seat">
+    <button id="nextBtn">Next</button>
+
+    <div id="frame"></div>
+    <div id="status"></div>
+    <div id="squaresContainer" class="squares" style="display:none;">
+        <div class="square" data-pos="left"></div>
+        <div class="square" data-pos="middle"></div>
+        <div class="square" data-pos="right"></div>
+    </div>
+</body>
+</html>
