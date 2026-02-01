@@ -1,36 +1,23 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Admin Panel</title>
-    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
-    <script src="utils.js"></script>
-    <script src="admin.js" defer></script>
-    <style>
-        body { font-family: sans-serif; padding:20px; }
-        #frame { margin:20px; }
-        button { padding:10px; margin:8px; font-size:1rem; }
-        #info { margin-top:10px; }
-    </style>
+<meta charset="UTF-8">
+<title>Admin Check-in</title>
+<style>
+body { font-family: Arial; text-align: center; margin-top: 50px; }
+button { font-size: 18px; margin: 5px; padding: 8px; }
+#info { margin-top: 20px; font-family: monospace; }
+#console { margin-top: 20px; background: #222; color: #0f0; padding: 10px; height: 150px; overflow: auto; }
+</style>
 </head>
 <body>
-    <h1>Admin Panel</h1>
-    <div id="frame"></div>
-    <div id="info"></div>
-    <button id="approveBtn" style="display:none;">Approve</button>
-    <button id="declineBtn" style="display:none;">Decline</button>
-    <div id="status"></div>
-
-    <div id="frame"></div>
+<h1>Admin Panel</h1>
+<button id="approveBtn">Approve</button>
+<button id="declineBtn">Decline</button>
 <div id="info"></div>
-<div id="status"></div>
+<div id="console"></div>
 
-<button id="approveBtn" style="display:none">Approve</button>
-<button id="declineBtn" style="display:none">Decline</button>
-
-<h3>Server Console</h3>
-<pre id="serverConsole" style="background:#222;color:#0f0;padding:10px;height:150px;overflow:auto;"></pre>
-<button id="copyConsole">Copy Console</button>
-
+<script src="utils.js"></script>
+<script src="admin.js"></script>
 </body>
 </html>
