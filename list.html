@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Check-in List</title>
+    <style>
+        body { font-family: monospace; background: #f0f0f0; padding: 20px; }
+        pre { background: #222; color: #0f0; padding: 15px; overflow: auto; max-height: 80vh; }
+        button { margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <h1>All Check-ins</h1>
+    <button id="refreshBtn">Refresh List</button>
+    <button id="copyBtn">Copy List</button>
+    <pre id="rawData">Loading...</pre>
+
+    <script src="utils.js"></script>
+    <script>
+        const rawData = document.getElementById('rawData');
+        const refreshBtn = document.getElementById('refreshBtn');
+        const copyBtn = document.getElementById('copyBtn');
+
+        async function fetchAllCheckins() {
+            rawData.textContent = "Loading...";
+            try {
+                const res = await fetch(window.location.origin + "/all");
+                const data = await res.json();
+                rawData.textContent = JSON.stringify(data, null, 2);
+            } catch (e) {
+                rawData.textContent = "Error fetching data:\n" + e;
+            }
+        }
+
+        refreshBtn.addEventListener('click', fetchAllCheckins);
+        copyBtn.addEventListener('click', () => {
+            navigator.clipboard.writeText(rawData.textContent)
+                .then(() => alert("Copied to clipboard!"))
+                .catch(err => alert("Copy failed: " + err));
+        });
+
+        fetchAllCheckins();
+    </script>
+</body>
+</html>
