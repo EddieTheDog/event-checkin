@@ -3,7 +3,26 @@
 <head>
   <meta charset="UTF-8">
   <title>Event Check-In</title>
-  <link rel="stylesheet" href="style.css">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    input, button {
+      margin: 5px 0;
+      padding: 8px;
+    }
+    #kiosk, #admin {
+      border: 1px solid #ccc;
+      padding: 10px;
+      margin-bottom: 20px;
+    }
+    pre {
+      background: #f9f9f9;
+      padding: 10px;
+      overflow-x: auto;
+    }
+  </style>
 </head>
 <body>
   <h1>Event Check-In</h1>
@@ -25,8 +44,154 @@
     <button id="approveBtn">Approve</button>
     <button id="declineBtn">Decline</button>
     <input type="text" id="declineReason" placeholder="Reason if declined">
+    <button id="copyOutputBtn">Copy JSON</button>
   </div>
 
-  <script src="script.js"></script>
+  <script>
+    // -------------------
+    // Config
+    // -------------------
+    const BASE_URL = window.location.origin;
+
+    // -------------------
+    // Elements
+    // -------------------
+    const ticketInput = document.getElementById("ticket_id");
+    const nameInput = document.getElementById("name");
+    const seatInput = document.getElementById("seat");
+    const submitBtn = document.getElementById("submitBtn");
+    const kioskMessage = document.getElementById("kioskMessage");
+
+    const adminOutput = document.getElementById("adminOutput");
+    const approveBtn = document.getElementById("approveBtn");
+    const declineBtn = document.getElementById("declineBtn");
+    const declineReasonInput = document.getElementById("declineReason");
+    const copyOutputBtn = document.getElementById("copyOutputBtn");
+
+    let latestCheckin = null;
+
+    // -------------------
+    // Helper fetchJSON with debug
+    // -------------------
+    async function fetchJSON(url, options = {}) {
+      try {
+        const res = await fetch(url, options);
+        const text = await res.text();
+        try {
+          return JSON.parse(text);
+        } catch {
+          console.error("Invalid JSON response:", text);
+          throw new Error("Invalid JSON");
+        }
+      } catch (err) {
+        console.error("Fetch error:", err);
+        throw err;
+      }
+    }
+
+    // -------------------
+    // Kiosk: Submit check-in
+    // -------------------
+    submitBtn.addEventListener("click", async () => {
+      const ticket_id = ticketInput.value.trim();
+      const name = nameInput.value.trim();
+      const seat = seatInput.value.trim();
+
+      if (!ticket_id || !name || !seat) {
+        kioskMessage.textContent = "Please fill all fields.";
+        return;
+      }
+
+      try {
+        const data = await fetchJSON(`${BASE_URL}/checkin`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ticket_id, name, seat })
+        });
+
+        if (data.id) {
+          kioskMessage.textContent = `Check-in submitted! ID: ${data.id}`;
+          ticketInput.value = "";
+          nameInput.value = "";
+          seatInput.value = "";
+        } else {
+          kioskMessage.textContent = `Error: ${data.error || "Unknown"}`;
+        }
+      } catch (err) {
+        kioskMessage.textContent = `Error submitting check-in: ${err.message}`;
+      }
+    });
+
+    // -------------------
+    // Admin: Poll latest pending check-in
+    // -------------------
+    async function pollLatest() {
+      try {
+        const data = await fetchJSON(`${BASE_URL}/latest`);
+        latestCheckin = data;
+        if (latestCheckin && latestCheckin.id) {
+          adminOutput.textContent = JSON.stringify(latestCheckin, null, 2);
+        } else {
+          adminOutput.textContent = "No pending check-ins.";
+        }
+      } catch (err) {
+        adminOutput.textContent = `Polling error: ${err.message}`;
+      }
+    }
+
+    setInterval(pollLatest, 3000);
+    pollLatest();
+
+    // -------------------
+    // Admin: Approve
+    // -------------------
+    approveBtn.addEventListener("click", async () => {
+      if (!latestCheckin || !latestCheckin.id) return;
+      try {
+        await fetchJSON(`${BASE_URL}/update/${latestCheckin.id}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status: "approved" })
+        });
+        latestCheckin = null;
+        adminOutput.textContent = "Approved! Waiting for next check-in...";
+      } catch (err) {
+        adminOutput.textContent = `Error approving: ${err.message}`;
+      }
+    });
+
+    // -------------------
+    // Admin: Decline
+    // -------------------
+    declineBtn.addEventListener("click", async () => {
+      if (!latestCheckin || !latestCheckin.id) return;
+      const reason = declineReasonInput.value.trim() || "No reason provided";
+
+      try {
+        await fetchJSON(`${BASE_URL}/update/${latestCheckin.id}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status: "declined", decline_reason: reason })
+        });
+
+        await fetchJSON(`${BASE_URL}/delete/${latestCheckin.id}`, { method: "POST" });
+
+        latestCheckin = null;
+        declineReasonInput.value = "";
+        adminOutput.textContent = "Declined and deleted! Waiting for next check-in...";
+      } catch (err) {
+        adminOutput.textContent = `Error declining: ${err.message}`;
+      }
+    });
+
+    // -------------------
+    // Admin: Copy JSON
+    // -------------------
+    copyOutputBtn.addEventListener("click", () => {
+      navigator.clipboard.writeText(adminOutput.textContent)
+        .then(() => alert("Copied!"))
+        .catch(err => console.error("Copy failed:", err));
+    });
+  </script>
 </body>
 </html>
