@@ -1,26 +1,22 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Event Check-In Kiosk</title>
-    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
-    <script src="utils.js"></script>
-    <script src="index.js" defer></script>
-    <style>
-        body { font-family: sans-serif; text-align:center; padding:30px; }
-        input, button { padding:10px; margin:8px; font-size:1rem; }
-        #frame { margin:20px; }
-        #status { margin-top:20px; font-size:1.2rem; }
-    </style>
+<meta charset="UTF-8">
+<title>Event Check-in Kiosk</title>
+<style>
+body { font-family: Arial; text-align: center; margin-top: 50px; }
+input, button { font-size: 18px; margin: 5px; padding: 8px; }
+</style>
 </head>
 <body>
-    <h1>Event Check-In Kiosk</h1>
-    <input id="ticket" placeholder="Scan Ticket ID">
-    <input id="name" placeholder="Enter Name">
-    <input id="seat" placeholder="Enter Seat">
-    <button id="nextBtn">Submit</button>
+<h1>Scan Your Ticket</h1>
+<input id="ticketInput" placeholder="Scan or enter ticket ID">
+<input id="nameInput" placeholder="Name">
+<input id="seatInput" placeholder="Seat">
+<button id="checkinBtn">Next</button>
+<p id="status"></p>
 
-    <div id="frame"></div>
-    <div id="status"></div>
+<script src="utils.js"></script>
+<script src="index.js"></script>
 </body>
 </html>
